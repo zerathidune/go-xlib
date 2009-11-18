@@ -5,6 +5,7 @@ import "encoding/binary";
 import "net";
 import "io";
 import "strings";
+import "os";
 
 const (
     xBigEndian = 0x42;
@@ -99,7 +100,9 @@ type Display struct {
 }
 
 func XDisplayOpen(s string)  {
-	init := newInitConnT(xLittleEndian, 11, 0);
+    xauth := ReadXAuthEntry(os.Stdin);
+    fmt.Println(xauth);
+    init := newInitConnT(xLittleEndian, 11, 0);
 	socket, addr_err := net.ResolveUnixAddr("unix", "/tmp/.X11-unix/X0");
 	fmt.Println("ResolveUnixAddr err :", addr_err);
 	conn, dial_err := net.DialUnix("unix", nil, socket);
