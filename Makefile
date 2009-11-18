@@ -1,10 +1,10 @@
-xlib-test: xlib.6 test.6 xauth.6
-	6l -o xlib-test test.6 xlib.6
-test.6: test.go
-	6g -I. test.go
-xlib.6: xlib.go
-	6g xlib.go
-xauth.6:
-	6g xauth.go
+XLIB_SOURCES=xlib.go xauth.go
+
+xlib-test: xlib.$(GOCHAR) test.$(GOCHAR)
+	$(GOCHAR)l -o xlib-test test.$(GOCHAR) xlib.$(GOCHAR)
+test.$(GOCHAR): test.go
+	$(GOCHAR)g -I. test.go
+xlib.$(GOCHAR): xlib.go
+	$(GOCHAR)g -I. -o xlib.$(GOCHAR) $(XLIB_SOURCES)
 clean:
-	-rm *.6 xlib-test
+	-rm *.$(GOCHAR) xlib-test
