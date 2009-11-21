@@ -17,10 +17,31 @@ type XAuthEntry struct {
 }
 
 func (xauth *XAuthEntry) String() string {
-    str := fmt.Sprintf("family : %v\naddress : %s\nnum : %s"
-        "\nname : %s\ndata %v\n", xauth.family, xauth.address, xauth.num,
-        xauth.name, xauth.data);
+    str := fmt.Sprintf(
+        "family : %v\n"
+        "address (%d) : %s\n"
+        "num (%d): %s\n"
+        "name (%d): %s\n"
+        "data (%d): %v\n",
+         xauth.family, xauth.addr_len, xauth.address, xauth.num_len, xauth.num,
+        xauth.name_len, xauth.name, xauth.data_len, xauth.data);
     return str;
+}
+
+func ReadLengthAndString(input io.Reader, end binary.ByteOrder) (uint16, []byte) {
+    lenBuf := make([]byte, 2);
+    input.Read(lenBuf);
+    length := end.Uint16(lenBuf);
+    if length == 0 {
+        return 0, nil;
+    }
+    stringBuf := make([]byte, length);
+    n, ok := input.Read(stringBuf);
+    if n < int(length) {
+        return 0, nil;
+        fmt.Println(ok);
+    }
+    return length, stringBuf;
 }
 
 func ReadXAuthEntry (input io.Reader) *XAuthEntry {
@@ -29,21 +50,9 @@ func ReadXAuthEntry (input io.Reader) *XAuthEntry {
     lenBuf := make([]byte, 2);
     input.Read(lenBuf);
     xauth_entry.family = end.Uint16(lenBuf);
-    input.Read(lenBuf);
-    xauth_entry.addr_len = end.Uint16(lenBuf);
-    xauth_entry.address = make([]byte, xauth_entry.addr_len);
-    input.Read(xauth_entry.address);
-    input.Read(lenBuf);
-    xauth_entry.num_len = end.Uint16(lenBuf);
-    xauth_entry.num = make([]byte, xauth_entry.num_len);
-    input.Read(xauth_entry.num);
-    input.Read(lenBuf);
-    xauth_entry.name_len = end.Uint16(lenBuf);
-    xauth_entry.name = make([]byte, xauth_entry.name_len);
-    input.Read(xauth_entry.name);
-    input.Read(lenBuf);
-    xauth_entry.data_len = end.Uint16(lenBuf);
-    xauth_entry.data = make([]byte, xauth_entry.data_len);
-    input.Read(xauth_entry.data);
+    xauth_entry.addr_len, xauth_entry.address = ReadLengthAndString(input,end);
+    xauth_entry.num_len, xauth_entry.num = ReadLengthAndString(input, end);
+    xauth_entry.name_len, xauth_entry.name = ReadLengthAndString(input, end);
+    xauth_entry.data_len, xauth_entry.data = ReadLengthAndString(input, end);
     return &xauth_entry;
 }
